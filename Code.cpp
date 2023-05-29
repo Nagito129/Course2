@@ -255,16 +255,21 @@ void DoTasks(int tasks) {
 			fileKey << "\tЗадание " << (i + 1) << endl;
 			fileAns << "\tЗадание " << (i + 1) << endl;
 			CreateRandTree(tree, amount);
+			SetBalance(tree);
 			TreeToFile(tree, NULL, false, fileAns);
 			fileAns << "\nУдаление числа " << del << ".\n";
 			if (CheckForRoot(tree, del)) {
 				DelRoot(tree, del);
+				SetBalance(tree);
+				GetBalanced(tree);
 				TreeToFile(tree, NULL, false, fileAns);
 			}
 			else fileAns << "Число для удаления не найдено.";
 			fileAns << "\nДобавление числа " << ins << ".\n";
 			if (!CheckForRoot(tree, ins)) {
 				Insert(tree, ins);
+				SetBalance(tree);
+				GetBalanced(tree);
 				TreeToFile(tree, NULL, false, fileAns);
 			}
 			else fileAns << "Число для добавления уже есть.";
