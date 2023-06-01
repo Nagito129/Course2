@@ -35,8 +35,6 @@ int Height(Tree* (&root)) {
 void SetBalance(Tree* (&root)) {
 	if (root != NULL) {
 		root->balance = Height(root->right) - Height(root->left);
-		SetBalance(root->left);
-		SetBalance(root->right);
 	}
 }
 void LeftRotate(Tree* (&root)) {
@@ -82,15 +80,11 @@ void Insert(Tree* (&root), int data) {
 	}
 	else {
 		if (root->data == data) return;
-		if (data < root->data) {
-			Insert(root->left, data);
-			Balancing(root);
-		}
-		else if (data > root->data) {
-			Insert(root->right, data);
-			Balancing(root);
-		}
+		if (data < root->data) Insert(root->left, data);
+		else if (data > root->data) Insert(root->right, data);
 	}
+	Balancing(root);
+	SetBalance(root);
 }
 void CreateRandTree(Tree* (&tree), int amount) {
 	int data;
@@ -98,7 +92,6 @@ void CreateRandTree(Tree* (&tree), int amount) {
 		data = 99 - (rand() % 199);
 		Insert(tree, data);
 	}
-	SetBalance(tree);
 }
 void CreateInputTree(Tree* (&tree)) {
 	string inp;
@@ -110,7 +103,6 @@ void CreateInputTree(Tree* (&tree)) {
 		data = stoi(inp);
 		Insert(tree, data);
 	}
-	SetBalance(tree);
 }
 void ShowTrunks(Trunk* (&trunk)) {
 	if (trunk == NULL) return;
@@ -138,13 +130,6 @@ void ShowTree(Tree* (&root), Trunk* prev, bool isRight) {
 	if (prev) prev->str = prev_str;
 	trunk->str = "   |";
 	ShowTree(root->left, trunk, false);
-}
-void GetBalanced(Tree* (&root)) {
-	if (root) {
-		if (root->balance < -1 || root->balance > 1) Balancing(root);
-		GetBalanced(root->left);
-		GetBalanced(root->right);
-	}
 }
 bool CheckForRoot(Tree* (&root), int data) {
 	if (root == NULL) return false;
@@ -180,6 +165,7 @@ void DelRoot(Tree* (&root), int data) {
 			DelRoot(root->left, newData);
 		}
 	}
+	Balancing(root);
 	SetBalance(root);
 }
 void GetRoot(Tree* (&root), int data) {
@@ -256,21 +242,16 @@ void DoTasks(int tasks) {
 			fileAns << "\tЗадание " << (i + 1) << endl;
 			fileAns << "Создано дерево размером " << amount << ".\n";
 			CreateRandTree(tree, amount);
-			SetBalance(tree);
 			TreeToFile(tree, NULL, false, fileAns);
 			fileAns << "\nУдаление числа " << del << ".\n";
 			if (CheckForRoot(tree, del)) {
 				DelRoot(tree, del);
-				SetBalance(tree);
-				GetBalanced(tree);
 				TreeToFile(tree, NULL, false, fileAns);
 			}
 			else fileAns << "Число для удаления не найдено.";
 			fileAns << "\nДобавление числа " << ins << ".\n";
 			if (!CheckForRoot(tree, ins)) {
 				Insert(tree, ins);
-				SetBalance(tree);
-				GetBalanced(tree);
 				TreeToFile(tree, NULL, false, fileAns);
 			}
 			else fileAns << "Число для добавления уже есть.";
@@ -326,7 +307,6 @@ void main() {
 				CreateRandTree(tree, amount);
 				timer.end = steady_clock::now();
 				timer.duration = timer.end - timer.start;
-				SetBalance(tree);
 				cout << "Создано дерево:\n";
 				ShowTree(tree, NULL, false);
 				cout << "Время выполнения: " << timer.duration.count() << " наносек.\n";
@@ -336,7 +316,6 @@ void main() {
 				CreateInputTree(tree);
 				timer.end = steady_clock::now();
 				timer.duration = timer.end - timer.start;
-				SetBalance(tree);
 				cout << "Создано дерево:\n";
 				ShowTree(tree, NULL, false);
 				cout << "Время выполнения: " << timer.duration.count() << " наносек.\n";
@@ -363,8 +342,6 @@ void main() {
 				if (!CheckForRoot(tree, data)) {
 					timer.start = steady_clock::now();
 					Insert(tree, data);
-					SetBalance(tree);
-					GetBalanced(tree);
 					timer.end = steady_clock::now();
 					timer.duration = timer.end - timer.start;
 					cout << "Элемент добавлен.\n";
@@ -386,8 +363,6 @@ void main() {
 				if (CheckForRoot(tree, data)) {
 					timer.start = steady_clock::now();
 					DelRoot(tree, data);
-					SetBalance(tree);
-					GetBalanced(tree);
 					timer.end = steady_clock::now();
 					timer.duration = timer.end - timer.start;
 					cout << "Элемент удалён.\n";
