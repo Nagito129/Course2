@@ -8,7 +8,7 @@ using namespace chrono;
 struct Tree {
 	int data;
 	int balance;
-	Tree* left, * rigth;
+	Tree* left, * right;
 };
 struct Trunk
 {
@@ -25,38 +25,38 @@ struct Timer {
 	time_point<steady_clock, duration<__int64, ratio<1, 1000000000>>> start, end;
 	duration<__int64, ratio<1, 1000000000>> duration;
 } timer;
-int Heigth(Tree* (&root)) {
+int Height(Tree* (&root)) {
 	if (root == NULL) return 0;
-	int hLeft = Heigth(root->left);
-	int hRigth = Heigth(root->rigth);
-	if (hLeft > hRigth) return hLeft + 1;
-	return hRigth + 1;
+	int hLeft = Height(root->left);
+	int hRight = Height(root->right);
+	if (hLeft > hRight) return hLeft + 1;
+	return hRight + 1;
 }
 void SetBalance(Tree* (&root)) {
 	if (root != NULL) {
-		root->balance = Heigth(root->rigth) - Heigth(root->left);
+		root->balance = Height(root->right) - Height(root->left);
 		SetBalance(root->left);
-		SetBalance(root->rigth);
+		SetBalance(root->right);
 	}
 }
 void LeftRotate(Tree* (&root)) {
-	Tree* rigthSubTree, * rigthLeftSubTree;
-	rigthSubTree = root->rigth;
-	rigthLeftSubTree = rigthSubTree->left;
-	rigthSubTree->left = root;
-	root->rigth = rigthLeftSubTree;
-	root = rigthSubTree;
+	Tree* rightSubTree, * rightLeftSubTree;
+	rightSubTree = root->right;
+	rightLeftSubTree = rightSubTree->left;
+	rightSubTree->left = root;
+	root->right = rightLeftSubTree;
+	root = rightSubTree;
 }
 void RightRotate(Tree* (&root)) {
-	Tree* leftSubTree, * leftRigthSubTree;
+	Tree* leftSubTree, * leftRightSubTree;
 	leftSubTree = root->left;
-	leftRigthSubTree = leftSubTree->rigth;
-	leftSubTree->rigth = root;
-	root->left = leftRigthSubTree;
+	leftRightSubTree = leftSubTree->right;
+	leftSubTree->right = root;
+	root->left = leftRightSubTree;
 	root = leftSubTree;
 }
 void BigLeftRotate(Tree* (&root)) {
-	RightRotate(root->rigth);
+	RightRotate(root->right);
 	LeftRotate(root);
 }
 void BigRightRotate(Tree* (&root)) {
@@ -65,12 +65,12 @@ void BigRightRotate(Tree* (&root)) {
 }
 void Balancing(Tree* (&root)) {
 	if (root == NULL) return;
-	if (Heigth(root->left) - Heigth(root->rigth) > 1) {
-		if (Heigth(root->left->left) < Heigth(root->left->rigth)) BigRightRotate(root);
+	if (Height(root->left) - Height(root->right) > 1) {
+		if (Height(root->left->left) < Height(root->left->right)) BigRightRotate(root);
 		else RightRotate(root);
 	}
-	else if (Heigth(root->rigth) - Heigth(root->left) > 1) {
-		if (Heigth(root->rigth->rigth) < Heigth(root->rigth->left)) BigLeftRotate(root);
+	else if (Height(root->right) - Height(root->left) > 1) {
+		if (Height(root->right->right) < Height(root->right->left)) BigLeftRotate(root);
 		else LeftRotate(root);
 	}
 }
@@ -78,7 +78,7 @@ void Insert(Tree* (&root), int data) {
 	if (root == NULL) {
 		root = new Tree;
 		root->data = data;
-		root->left = root->rigth = NULL;
+		root->left = root->right = NULL;
 	}
 	else {
 		if (root->data == data) return;
@@ -87,7 +87,7 @@ void Insert(Tree* (&root), int data) {
 			Balancing(root);
 		}
 		else if (data > root->data) {
-			Insert(root->rigth, data);
+			Insert(root->right, data);
 			Balancing(root);
 		}
 	}
@@ -121,7 +121,7 @@ void ShowTree(Tree* (&root), Trunk* prev, bool isRight) {
 	if (root == NULL) return;
 	string prev_str = "    ";
 	Trunk* trunk = new Trunk(prev, prev_str);
-	ShowTree(root->rigth, trunk, true);
+	ShowTree(root->right, trunk, true);
 	if (!prev) {
 		trunk->str = "--->";
 	}
@@ -143,35 +143,35 @@ void GetBalanced(Tree* (&root)) {
 	if (root) {
 		if (root->balance < -1 || root->balance > 1) Balancing(root);
 		GetBalanced(root->left);
-		GetBalanced(root->rigth);
+		GetBalanced(root->right);
 	}
 }
 bool CheckForRoot(Tree* (&root), int data) {
 	if (root == NULL) return false;
 	if (data == root->data) return true;
 	if (data < root->data) return CheckForRoot(root->left, data);
-	else return CheckForRoot(root->rigth, data);
+	else return CheckForRoot(root->right, data);
 }
 int GetMaxData(Tree* (&root)) {
-	if (root->rigth == NULL) return root->data;
-	else return GetMaxData(root->rigth);
+	if (root->right == NULL) return root->data;
+	else return GetMaxData(root->right);
 }
 void DelRoot(Tree* (&root), int data) {
 	if (data < root->data) DelRoot(root->left, data);
-	else if (data > root->data) DelRoot(root->rigth, data);
+	else if (data > root->data) DelRoot(root->right, data);
 	else {
-		if (root->left == NULL && root->rigth == NULL) {
+		if (root->left == NULL && root->right == NULL) {
 			delete root;
 			root = NULL;
 		}
-		else if (root->rigth == NULL) {
+		else if (root->right == NULL) {
 			Tree* delRoot = root;
 			root = root->left;
 			delete delRoot;
 		}
 		else if (root->left == NULL) {
 			Tree* delRoot = root;
-			root = root->rigth;
+			root = root->right;
 			delete delRoot;
 		}
 		else {
@@ -185,7 +185,7 @@ void DelRoot(Tree* (&root), int data) {
 void GetRoot(Tree* (&root), int data) {
 	if (root == NULL) return;
 	if (data < root->data) GetRoot(root->left, data);
-	else if (data > root->data) GetRoot(root->rigth, data);
+	else if (data > root->data) GetRoot(root->right, data);
 	else {
 		timer.end = steady_clock::now();
 		timer.duration = timer.end - timer.start;
@@ -195,7 +195,7 @@ void GetRoot(Tree* (&root), int data) {
 void ClearTree(Tree* (&root)) {
 	if (root != NULL) {
 		ClearTree(root->left);
-		ClearTree(root->rigth);
+		ClearTree(root->right);
 		delete root;
 		root = NULL;
 	}
@@ -209,7 +209,7 @@ void TreeToFile(Tree* (&root), Trunk* prev, bool isRight, ofstream& file) {
 	if (root == NULL) return;
 	string prev_str = "    ";
 	Trunk* trunk = new Trunk(prev, prev_str);
-	TreeToFile(root->rigth, trunk, true, file);
+	TreeToFile(root->right, trunk, true, file);
 	if (!prev) {
 		trunk->str = "--->";
 	}
@@ -254,6 +254,7 @@ void DoTasks(int tasks) {
 			fileTask >> amount >> del >> ins;
 			fileKey << "\tЗадание " << (i + 1) << endl;
 			fileAns << "\tЗадание " << (i + 1) << endl;
+			fileAns << "Создано дерево размером " << amount << ".\n";
 			CreateRandTree(tree, amount);
 			SetBalance(tree);
 			TreeToFile(tree, NULL, false, fileAns);
@@ -284,7 +285,10 @@ void DoTasks(int tasks) {
 }
 void Tasks() {
 	int tasks;
-	cout << "Введите, сколько заданий сгенерировать: ";
+	cout << "В каждом задании будет создано дерево размером от 10 до 50 элементов в диапазоне от -99 до 99.\n"
+		<< "Будет создано рандомное число, которое удалится из дерева, если будет в нём.\n"
+		<< "Будет создано рандомное число, которое добавится в дерево, если не будет в нём.\n"
+		<< "Введите, сколько заданий сгенерировать: ";
 	cin >> tasks;
 	CreateTasks(tasks);
 	DoTasks(tasks);
